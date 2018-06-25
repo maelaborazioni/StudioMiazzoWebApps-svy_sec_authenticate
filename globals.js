@@ -24,6 +24,71 @@ function svy_sec_getOwnerName(_owner_id, _framework_db) {
 }
 
 /**
+ * TODO generated, please specify type and doc for the params
+ * @param {String} _owner_name
+ * @param {String} _framework_db
+ * 
+ * @return {String}
+ * 
+ * @properties={typeid:24,uuid:"D138C03F-0AE0-47A2-8EEE-579EE0EECC0A"}
+ */
+function svy_sec_getOwnerFromName(_owner_name, _framework_db) {
+	var _query = 'SELECT owner_id \
+					FROM sec_owner \
+					WHERE name = ?'
+	var _dataset = databaseManager.getDataSetByQuery(_framework_db,_query,[_owner_name],-1)
+	if(_dataset.getMaxRowIndex() == 1 && _dataset.getValue(1,1))
+		return _dataset.getValue(1,1)
+	else
+		return null;
+}
+
+/**
+ * TODO generated, please specify type and doc for the params
+ * @param {String} _owner_id
+ * @param {String} _organization_name
+ * @param {String} _framework_db
+ * 
+ * @return {String}
+ * 
+ * @properties={typeid:24,uuid:"2585C3D1-E56E-4FC9-8650-45D825AFA462"}
+ */
+function svy_sec_getOrganizationFromOwnerOrganization(_owner_id,_organization_name, _framework_db) {
+	var _query = 'SELECT organization_id, owner_id, name, is_client, login_enabled \
+                  FROM sec_organization \
+                  WHERE owner_id = ? AND name = ?';
+	var _dataset = databaseManager.getDataSetByQuery(_framework_db,_query,[_owner_id,_organization_name],-1)
+	if(_dataset.getMaxRowIndex() == 1 && _dataset.getValue(1,1))
+		return _dataset.getValue(1,1)
+	else
+		return null;
+}
+
+/**
+ * TODO generated, please specify type and doc for the params
+ * @param {String} _user_name
+ * @param {String} _owner_id
+ * @param {String} _framework_db
+ * 
+ * @return {Number}
+ * 
+ * @properties={typeid:24,uuid:"3326A3FA-52C3-4593-B443-A81685EFA45F"}
+ */
+function svy_sec_getUserFromName(_user_name, _owner_id, _framework_db)
+{
+   var _query = 'SELECT user_id, owner_id, user_locked \
+   				 FROM sec_user WHERE user_name = ? \
+   				 AND owner_id = ? \
+                 AND user_locked is null';		
+   
+   var _dataset = databaseManager.getDataSetByQuery(_framework_db,_query,[_user_name,_owner_id],-1)
+   if(_dataset.getMaxRowIndex() == 1 && _dataset.getValue(1,1))
+      return _dataset.getValue(1,1)
+   else
+	  return null;
+}
+
+/**
  * @param {{owner:String, framework_db:String}} _authObj
  * @properties={typeid:24,uuid:"96504B4F-7613-4971-A81E-E62BB781E132"}
  */
@@ -361,6 +426,92 @@ function svy_sec_login(_username, _user_id, _organisation_id, _framework_db) {
 	}
 	
 	return -1;
+}
+
+/**
+ * Log to an application's session through provided authorization token
+ *
+ * @param {String} access_token
+ *
+ * @properties={typeid:24,uuid:"473AD0D4-0433-44DC-ABAB-E9A2E4CBE84A"}
+ */
+function svy_sec_login_with_token(access_token)
+{
+    if(!svy_sec_checkAccessToken(access_token))
+    	return false;
+    
+    // TODO 
+    var _userObj = svy_sec_getUserFromToken(access_token);
+    
+    return true;
+}
+
+/**
+ * Verify if the passed token is valid on the current authorization system
+ * 
+ * @param {String} accessToken
+ * 
+ * @author Giovanni
+ * 
+ * @properties={typeid:24,uuid:"BFDF770D-2F7B-4AE5-B97C-9860BA27171E"}
+ */
+function svy_sec_checkAccessToken(accessToken)
+{
+	// TODO submit passed token to the auth API and process response
+	return true;
+}
+
+/**
+ * Get user properties for the login from the provided token
+ * 
+ * @param {String} access_token
+ *
+ * @return {{username : String, organization : String, owner : String}}
+ * 
+ * @properties={typeid:24,uuid:"DA11759F-69FE-479E-9B25-98D2A099E80F"}
+ */
+function svy_sec_getUserFromToken(access_token)
+{
+	// TODO submit passed token to the users' API and process response
+	// ...
+	
+	var _userObj = {username : 'ASSISTENZA', organization : '', owner : 'DEMO'};
+	return _userObj;
+}
+
+/**
+ * Verify that the passed parameters are valid for a session (they define a single user for the organization and
+ * the owner specified)
+ * 
+ * @param _user_id
+ * @param _owner_id
+ * @param [_organization_id]
+ * @param [_framework_db]
+ *
+ * @properties={typeid:24,uuid:"E9DF82DA-280C-4AA7-9561-9E47BA77DF3B"}
+ */
+function svy_sec_checkUser(_user_id, _owner_id, _organization_id, _framework_db)
+{
+	var frameworkDb = _framework_db? _framework_db : 'svy_framework';
+	
+	var query = '	SELECT			sec_user.user_id, \
+		sec_user.user_locked, \
+		sow.license_amount, \
+		sow.owner_i, \
+		FROM			sec_user, \
+		sec_owner sow \
+WHERE (EXISTS \
+		(SELECT	* \
+		FROM	sec_user_org, \
+				sec_organization, \
+				sec_owner \
+		WHERE	sec_user.user_id = sec_user_org.user_id \
+		AND		sec_user_org.organization_id = sec_organization.organization_id \
+		AND		sec_organization.owner_id = sec_owner.owner_id \
+		AND		sec_owner.owner_id = sow.owner_id \
+		AND		sec_owner.name = ?) \
+      ) \
+AND			sec_user.user_name = ?';
 }
 
 /**
