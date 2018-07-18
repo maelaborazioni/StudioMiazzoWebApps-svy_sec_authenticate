@@ -25,6 +25,24 @@ function svy_sec_getOwnerName(_owner_id, _framework_db) {
 
 /**
  * TODO generated, please specify type and doc for the params
+ * @param _owner_name
+ * @param _framework_db
+ *
+ * @properties={typeid:24,uuid:"8F3A8D3D-213F-4850-BE38-8C31397FFCCC"}
+ */
+function svy_sec_getOwnerIdByName(_owner_name, _framework_db) {
+	var _query = 'SELECT owner_id \
+					FROM sec_owner \
+					WHERE name = ?'
+	var _dataset = databaseManager.getDataSetByQuery(_framework_db,_query,[_owner_name],-1)
+	if(_dataset.getValue(1,1))
+		return _dataset.getValue(1,1);
+	else
+		return false;
+}
+
+/**
+ * TODO generated, please specify type and doc for the params
  * @param {String} _owner_name
  * @param {String} _framework_db
  * 
@@ -86,6 +104,67 @@ function svy_sec_getUserFromName(_user_name, _owner_id, _framework_db)
       return _dataset.getValue(1,1)
    else
 	  return null;
+}
+
+/**
+ * TODO generated, please specify type and doc for the params
+ * @param {Number} _user_id
+ * @param {String} _owner_id
+ * @param {String} _framework_db
+ *
+ * @properties={typeid:24,uuid:"6A72F1F2-FD3A-425C-A106-107111881B42"}
+ */
+function svy_sec_getUserName(_user_id, _owner_id, _framework_db)
+{
+   var _query = 'SELECT user_name \
+   				 FROM sec_user WHERE user_id = ? \
+   				 AND owner_id = ? \
+                 AND user_locked is null';		
+   
+   var _dataset = databaseManager.getDataSetByQuery(_framework_db,_query,[_user_id,_owner_id],-1)
+   if(_dataset.getMaxRowIndex() == 1 && _dataset.getValue(1,1))
+      return _dataset.getValue(1,1)
+   else
+	  return null;
+}
+
+/**
+ * TODO generated, please specify type and doc for the params
+ * @param {Number} _user_org_id
+ * @param {String} _framework_db
+ * 
+ * @properties={typeid:24,uuid:"8D9AF7CC-5DC0-4FCD-8E08-43AA0370F793"}
+ */
+function svy_sec_getUserFromUserOrgId(_user_org_id,_framework_db)
+{
+	var _query = 'SELECT user_id \
+			 	  FROM sec_user_org WHERE user_org_id = ?';		
+
+	var _dataset = databaseManager.getDataSetByQuery(_framework_db,_query,[_user_org_id],-1)
+	if(_dataset.getMaxRowIndex() == 1 && _dataset.getValue(1,1))
+		return _dataset.getValue(1,1)
+	else
+		return null;
+}
+
+/**
+ * TODO generated, please specify type and doc for the params
+ * @param {Number} _user_org_id
+ * @param {String} _framework_db
+ *
+ * @properties={typeid:24,uuid:"E36188CB-1A20-455B-AE81-1A45E4418728"}
+ */
+function svy_sec_getOrganizationFromUserOrgId(_user_org_id,_framework_db)
+{
+	var _query = 'SELECT organization_id \
+				  FROM sec_user_org \
+				  WHERE user_org_id = ?';		
+
+	var _dataset = databaseManager.getDataSetByQuery(_framework_db,_query,[_user_org_id],-1)
+	if(_dataset.getMaxRowIndex() == 1 && _dataset.getValue(1,1))
+		return _dataset.getValue(1,1)
+	else
+		return null;
 }
 
 /**
@@ -201,7 +280,7 @@ function svy_sec_checkUserPassword(_authObj) {
 		// when a user uses a wrong password, we keep track in the user table
 		
 		// get the record of the user
-		/** @type {JSFoundset<db:/svy_framework/sec_user>} */
+		/** @type {JSFoundSet<db:/svy_framework/sec_user>} */
 		var _fs_user = databaseManager.getFoundSet(_authObj.framework_db, 'sec_user');
 		_fs_user.addFoundSetFilterParam('owner_id', '=', dataset.getValue(1, 6));
 		_fs_user.addFoundSetFilterParam('user_name', '=', _authObj.username);
@@ -223,7 +302,7 @@ function svy_sec_checkUserPassword(_authObj) {
 					/** @type {Number} */
 					var _passwordTimesWrong = dataset.getValue(1, 7);
 					
-					/** @type {JSFoundset<db:/svy_framework/sec_user_login_attempt>} */
+					/** @type {JSFoundSet<db:/svy_framework/sec_user_login_attempt>} */
 					var _fs_loginAttempt = databaseManager.getFoundSet(_authObj.framework_db, 'sec_user_login_attempt');
 					_fs_loginAttempt.find();
 					_fs_loginAttempt.user_id = dataset.getValue(1, 1);
@@ -341,7 +420,7 @@ function svy_sec_checkUserPassword_http(_authObj) {
 		// when a user uses a wrong password, we keep track in the user table
 		
 		// get the record of the user
-		/** @type {JSFoundset<db:/svy_framework/sec_user>} */
+		/** @type {JSFoundSet<db:/svy_framework/sec_user>} */
 		var _fs_user = databaseManager.getFoundSet(_authObj.framework_db, 'sec_user');
 		_fs_user.addFoundSetFilterParam('owner_id', '=', dataset.getValue(1, 6));
 		_fs_user.addFoundSetFilterParam('user_name', '=', _authObj.username);
@@ -363,7 +442,7 @@ function svy_sec_checkUserPassword_http(_authObj) {
 					/** @type {Number} */
 					var _passwordTimesWrong = dataset.getValue(1, 7);
 					
-					/** @type {JSFoundset<db:/svy_framework/sec_user_login_attempt>} */
+					/** @type {JSFoundSet<db:/svy_framework/sec_user_login_attempt>} */
 					var _fs_loginAttempt = databaseManager.getFoundSet(_authObj.framework_db, 'sec_user_login_attempt');
 					_fs_loginAttempt.find();
 					_fs_loginAttempt.user_id = dataset.getValue(1, 1);
@@ -401,7 +480,7 @@ function svy_sec_checkUserPassword_http(_authObj) {
  * @AllowToRunInFind
  */
 function svy_sec_login(_username, _user_id, _organisation_id, _framework_db) {	
-	/** @type {JSFoundset<db:/svy_framework/sec_user_org>} */
+	/** @type {JSFoundSet<db:/svy_framework/sec_user_org>} */
 	var _fsUserOrg = databaseManager.getFoundSet(_framework_db, 'sec_user_org');
 	
 	_fsUserOrg.find();
@@ -412,7 +491,7 @@ function svy_sec_login(_username, _user_id, _organisation_id, _framework_db) {
 			return _fsUserOrg.user_org_id;
 		}
 	} else {
-		/** @type {JSFoundset<db:/svy_framework/sec_user>} */
+		/** @type {JSFoundSet<db:/svy_framework/sec_user>} */
 		var _fsUser = databaseManager.getFoundSet(_framework_db, 'sec_user');
 		_fsUser.find();
 		_fsUser.user_id = _user_id;
@@ -429,36 +508,56 @@ function svy_sec_login(_username, _user_id, _organisation_id, _framework_db) {
 }
 
 /**
- * Log to an application's session through provided authorization token
- *
- * @param {String} access_token
- *
- * @properties={typeid:24,uuid:"473AD0D4-0433-44DC-ABAB-E9A2E4CBE84A"}
- */
-function svy_sec_login_with_token(access_token)
-{
-    if(!svy_sec_checkAccessToken(access_token))
-    	return false;
-    
-    // TODO 
-    var _userObj = svy_sec_getUserFromToken(access_token);
-    
-    return true;
-}
-
-/**
  * Verify if the passed token is valid on the current authorization system
  * 
- * @param {String} accessToken
+ * @param {String} currentRefreshToken
+ * 
+ * @return {Boolean}
  * 
  * @author Giovanni
  * 
  * @properties={typeid:24,uuid:"BFDF770D-2F7B-4AE5-B97C-9860BA27171E"}
  */
-function svy_sec_checkAccessToken(accessToken)
+function svy_sec_checkAccessToken(currentRefreshToken)
 {
-	// TODO submit passed token to the auth API and process response
-	return true;
+	var retValue = false;
+	
+	// submit passed token to the auth API and process response
+	var url = 'https://api.studiomiazzo.it:1801/api/Authentication/Token';
+	
+//	var params = {clientId : 'apps.studiomiazzo.it',
+//		          grantType : 'refresh_token',
+//				  refreshToken : currentRefreshToken};
+	
+	var client = plugins.http.createNewHttpClient();
+//	var jsonParams = plugins.serialize.toJSON(params).replace(/_([a-zA-Z0-9]+)(\\?":)/g, '$1$2');
+				
+	var request = client.createPostRequest(url);
+	request.addHeader('Content-type','application/x-www-form-urlencoded');
+//	request.addHeader('Content-type','application/json');
+	request.addParameter('clientId','apps.studiomiazzo.it');
+	request.addParameter('grantType','refresh_token');
+	request.addParameter('refreshToken',currentRefreshToken);
+	//request.setBodyContent(jsonParams);
+	
+	var response = request.executeRequest();
+	if(response)
+	{
+		var responseBody = response.getResponseBody();
+		var responseObj  = plugins.serialize.fromJSON(responseBody);
+		var statusCode   = response.getStatusCode();
+		
+		switch (statusCode)
+		{
+			case 200:
+				retValue = true;
+				break;
+			default:	
+				break;	
+		}		
+	}
+	
+	return retValue;
 }
 
 /**
@@ -472,9 +571,6 @@ function svy_sec_checkAccessToken(accessToken)
  */
 function svy_sec_getUserFromToken(access_token)
 {
-	// TODO submit passed token to the users' API and process response
-	// ...
-	
 	var _userObj = {username : 'ASSISTENZA', organization : '', owner : 'DEMO'};
 	return _userObj;
 }
@@ -605,7 +701,7 @@ function svy_sec_getForcedWindowSize(_framework_db) {
  * @properties={typeid:24,uuid:"0CBC4772-A738-4EC1-8DC8-E608CD87908B"}
  */
 function svy_sec_registerLoginAttempt(_user_id, _is_successful, _reason_unsuccessful, _reason_include_timespan, _framework_db) {
-	/** @type {JSFoundset<db:/svy_framework/sec_user_login_attempt>} */
+	/** @type {JSFoundSet<db:/svy_framework/sec_user_login_attempt>} */
 	var _fs_loginAttempt = databaseManager.getFoundSet(_framework_db, 'sec_user_login_attempt');
 	_fs_loginAttempt.newRecord();
 	_fs_loginAttempt.user_id = _user_id;
@@ -621,7 +717,7 @@ function svy_sec_registerLoginAttempt(_user_id, _is_successful, _reason_unsucces
  * @AllowToRunInFind
  */
 function getLastLoginAttempt(_user_id, _framework_db) {
-	/** @type {JSFoundset<db:/svy_framework/sec_user_login_attempt>} */
+	/** @type {JSFoundSet<db:/svy_framework/sec_user_login_attempt>} */
 	var _fs_loginAttempt = databaseManager.getFoundSet(_framework_db, 'sec_user_login_attempt');
 	_fs_loginAttempt.find();
 	_fs_loginAttempt.user_id = _user_id;
