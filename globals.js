@@ -543,8 +543,6 @@ function svy_sec_checkAccessToken(currentRefreshToken)
 	var response = request.executeRequest();
 	if(response)
 	{
-		var responseBody = response.getResponseBody();
-		var responseObj  = plugins.serialize.fromJSON(responseBody);
 		var statusCode   = response.getStatusCode();
 		
 		switch (statusCode)
@@ -575,40 +573,6 @@ function svy_sec_getUserFromToken(access_token)
 	return _userObj;
 }
 
-/**
- * Verify that the passed parameters are valid for a session (they define a single user for the organization and
- * the owner specified)
- * 
- * @param _user_id
- * @param _owner_id
- * @param [_organization_id]
- * @param [_framework_db]
- *
- * @properties={typeid:24,uuid:"E9DF82DA-280C-4AA7-9561-9E47BA77DF3B"}
- */
-function svy_sec_checkUser(_user_id, _owner_id, _organization_id, _framework_db)
-{
-	var frameworkDb = _framework_db? _framework_db : 'svy_framework';
-	
-	var query = '	SELECT			sec_user.user_id, \
-		sec_user.user_locked, \
-		sow.license_amount, \
-		sow.owner_i, \
-		FROM			sec_user, \
-		sec_owner sow \
-WHERE (EXISTS \
-		(SELECT	* \
-		FROM	sec_user_org, \
-				sec_organization, \
-				sec_owner \
-		WHERE	sec_user.user_id = sec_user_org.user_id \
-		AND		sec_user_org.organization_id = sec_organization.organization_id \
-		AND		sec_organization.owner_id = sec_owner.owner_id \
-		AND		sec_owner.owner_id = sow.owner_id \
-		AND		sec_owner.name = ?) \
-      ) \
-AND			sec_user.user_name = ?';
-}
 
 /**
  * @properties={typeid:24,uuid:"4E1E0E9E-4C64-4F5F-A6F0-758C9A8C52B2"}
